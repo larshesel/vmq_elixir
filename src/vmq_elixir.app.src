@@ -1,0 +1,12 @@
+{application, vmq_elixir,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { vmq_elixir_app, []}},
+  {env, []}
+ ]}.
