@@ -1,26 +1,40 @@
 -module(vmq_elixir_app).
 
 -behaviour(application).
-
-%% Application callbacks
 -export([start/2, stop/1]).
+
+-behaviour(supervisor).
+-export([init/1]).
+
 
 %% ===================================================================
 %% Application callbacks
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    case application:get_env(vmq_elixir, elixir_path) of
-        undefined ->
-            set_path(built_in_elixir_path());
-        path ->
-            %% TODO
-            ok
+    case application:ensure_started(elixir) of
+        ok ->
+            %% Elixir is already started and hence we do not need to
+            %% guess where the elixir beam files are located.
+            ok;
+        _ ->
+            ok = add_elixir_dirs_to_path(code:lib_dir(vmq_elixir)),
+            {ok, _} = application:ensure_all_started(elixir)
     end,
-    ok.
+    supervisor:start_link({local,?MODULE},?MODULE,[]).
 
-set_path(path) ->
-    code:add_patha(path).
+add_elixir_dirs_to_path(BasePath) ->
+    Dirs = filelib:wildcard(BasePath ++ "/deps/elixir/lib/*/ebin"),
+    case Dirs of
+        [] ->
+            {error, elixir_not_found};
+        _ ->
+            [code:add_patha(Dir) || Dir <- Dirs],
+            ok
+    end.
+
+init([]) ->
+    {ok, {{one_for_one,3,10},[]}}.
 
 stop(_State) ->
     ok.
