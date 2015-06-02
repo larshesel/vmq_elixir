@@ -24,7 +24,11 @@ start(_StartType, _StartArgs) ->
     supervisor:start_link({local,?MODULE},?MODULE,[]).
 
 add_elixir_dirs_to_path(BasePath) ->
-    Dirs = filelib:wildcard(BasePath ++ "/deps/elixir/lib/*/ebin"),
+    Dirs =
+        %% If built with Rebar2:
+        filelib:wildcard(BasePath ++ "/deps/elixir/lib/*/ebin") ++
+        %% If built with rebar3:
+        filelib:wildcard(BasePath ++ "/../elixir/lib/*/ebin"),
     case Dirs of
         [] ->
             {error, elixir_not_found};
