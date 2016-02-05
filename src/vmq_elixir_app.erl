@@ -25,9 +25,6 @@ start(_StartType, _StartArgs) ->
 
 add_elixir_dirs_to_path(BasePath) ->
     Dirs =
-        %% If built with Rebar2:
-        filelib:wildcard(BasePath ++ "/deps/elixir/lib/*/ebin") ++
-        %% If built with rebar3:
         filelib:wildcard(BasePath ++ "/../elixir/lib/*/ebin"),
     case Dirs of
         [] ->
