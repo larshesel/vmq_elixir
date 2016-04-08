@@ -11,24 +11,27 @@
 %% Application callbacks
 %% ===================================================================
 
+elixir_lib_path() ->
+    %% example path: "/usr/local/elixir/lib"
+    "/home/opt/elixir/elixir/lib".
+
 start(_StartType, _StartArgs) ->
     case application:ensure_started(elixir) of
         ok ->
-            %% Elixir is already started and hence we do not need to
-            %% guess where the elixir beam files are located.
+            %% Elixir is already started.
             ok;
         _ ->
-            ok = add_elixir_dirs_to_path(code:lib_dir(vmq_elixir)),
+            ok = add_elixir_dirs_to_path(elixir_lib_path()),
             {ok, _} = application:ensure_all_started(elixir)
     end,
     supervisor:start_link({local,?MODULE},?MODULE,[]).
 
 add_elixir_dirs_to_path(BasePath) ->
     Dirs =
-        filelib:wildcard(BasePath ++ "/../elixir/lib/*/ebin"),
+        filelib:wildcard(BasePath ++ "/*/ebin"),
     case Dirs of
         [] ->
-            {error, elixir_not_found};
+            {error, incorrect_elixir_path};
         _ ->
             [code:add_patha(Dir) || Dir <- Dirs],
             ok
